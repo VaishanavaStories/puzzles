@@ -10,7 +10,13 @@
         :ref="el => inputRefs[key] = el"
         maxlength="1" 
         class="cell-input"
+        :class="{ 
+          'wrong': getCellStatus(cell.x, cell.y) === 'wrong',
+          'correct': getCellStatus(cell.x, cell.y) === 'correct' 
+        }"
         :placeholder="cell.pos"
+        :readonly="isReadOnly" 
+        :value="currentAnswers[`${cell.x}-${cell.y}`] || ''"
         @focus="handleCellFocus(cell.x, cell.y)"
         @keydown="handleKeyDown($event, cell.x, cell.y)"
         @input="handleInput($event, cell.x, cell.y)"
@@ -22,7 +28,15 @@
 <script setup>
 import { computed, ref } from 'vue';
 
-const props = defineProps(['puzzleData']);
+const props = defineProps({
+  puzzleData: Array,
+  isReadOnly: Boolean,
+  results: Array,
+  currentAnswers: { 
+    type: Object,
+    default: () => ({})
+  }
+});
 const emit = defineEmits(['update:modelValue']);
 const inputRefs = ref({});
 const currentDirection = ref('across');
@@ -89,6 +103,24 @@ const handleKeyDown = (event, x, y) => {
     if (inputRefs.value[prevKey]) inputRefs.value[prevKey].focus();
   }
 };
+
+const getCellStatus = (x, y) => {
+  if (!props.results || props.results.length === 0) return null;
+  
+  const word = props.results.find(w => {
+    if (w.orientation === 'across') return y === w.starty && x >= w.startx && x < w.startx + w.answer.length;
+    return x === w.startx && y >= w.starty && y < w.starty + w.answer.length;
+  });
+
+  if (!word) return null;
+  
+  const index = word.orientation === 'across' ? x - word.startx : y - word.starty;
+  const userChar = (props.currentAnswers[`${x}-${y}`] || '').toUpperCase();
+  const correctChar = word.answer[index]?.toUpperCase();
+  
+  if (!userChar || userChar === ' ') return null;
+  return userChar === correctChar ? 'correct' : 'wrong';
+};
 </script>
 
 <style scoped>
@@ -121,4 +153,15 @@ const handleKeyDown = (event, x, y) => {
 }
 
 .cell-input::placeholder { font-size: 9px; color: #aaa; }
+
+.cell-input.wrong {
+  background-color: #ffcccc !important;
+  border-color: #ff4757 !important;
+  color: #ff4757;
+}
+.cell-input.correct {
+  background-color: #d4edda !important;
+  border-color: #28a745 !important;
+  color: #155724;
+}
 </style>

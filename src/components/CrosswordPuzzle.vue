@@ -7,6 +7,8 @@ import CrosswordGrid from './CrosswordGrid.vue';
 const route = useRoute();
 const qnId = route.params.id; 
 const puzzleData = ref(null);
+const showResults = ref(false);
+const finalSubmission = ref(null); // Store data to display red highlights
 
 const acrossClues = computed(() => 
   puzzleData.value ? puzzleData.value.filter(i => i.orientation === 'across') : []
@@ -30,6 +32,7 @@ async function fetchPuzzle() {
     console.error('Error fetching puzzle:', error.message);
   } else {
     puzzleData.value = JSON.parse(data.qns_json);
+    showResults.value = false; // <--- Change this to false so it is editable
   }
 }
 
@@ -72,6 +75,10 @@ async function submitPuzzle() {
   if (error) {
     alert('Submission failed: ' + error.message);
   } else {
+    // 1. Set the submission data to trigger red highlighting in CrosswordGrid
+    finalSubmission.value = submissionData;
+    // 2. Lock the grid
+    showResults.value = true; 
     alert('Submitted successfully!');
   }
 }
@@ -90,7 +97,13 @@ onMounted(fetchPuzzle);
       </div>
     </div>
 
-    <CrosswordGrid :puzzleData="puzzleData" @update:modelValue="handleUpdate" />
+    <CrosswordGrid 
+      :puzzleData="puzzleData" 
+      :isReadOnly="showResults" 
+      :results="finalSubmission"
+      :currentAnswers="formData.ans_json" 
+      @update:modelValue="handleUpdate" 
+    />
 
     <div class="clues-container">
       <div>
@@ -111,7 +124,13 @@ onMounted(fetchPuzzle);
       </div>
     </div>
 
-    <button @click="submitPuzzle" class="submit-btn">Submit Answer</button>
+    <button 
+      @click="submitPuzzle" 
+      class="submit-btn" 
+      :disabled="showResults"
+    >
+      {{ showResults ? 'Submitted' : 'Submit Answer' }}
+    </button>
   </div>
   
   <div v-else class="puzzle-container">
