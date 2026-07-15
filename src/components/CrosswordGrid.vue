@@ -48,8 +48,14 @@ const uniqueCells = computed(() => {
       const x = wordObj.orientation === 'across' ? wordObj.startx + i : wordObj.startx;
       const y = wordObj.orientation === 'down' ? wordObj.starty + i : wordObj.starty;
       const key = `${x}-${y}`;
+      
       if (!cells[key]) {
-        cells[key] = { x, y, pos: i === 0 ? wordObj.position : '' };
+        cells[key] = { x, y, pos: '' };
+      }
+      
+      // If this cell is the start of a word, assign the position number
+      if (i === 0) {
+        cells[key].pos = wordObj.position;
       }
     }
   });
