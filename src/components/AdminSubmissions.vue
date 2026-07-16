@@ -3,6 +3,7 @@ import { ref, watch, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
 import { supabase } from '../supabaseClient';
 import CrosswordGrid from './CrosswordGrid.vue';
+import * as XLSX from 'xlsx';
 
 const router = useRouter();
 const crosswords = ref([]);
@@ -109,12 +110,38 @@ function getUserAnswers(ansJson) {
     return {};
   }
 }
+
+function exportToExcel() {
+  const data = submissions.value.map(sub => {
+    const score = getScore(sub.ans_json);
+    return {
+      Name: sub.kid_name,
+      Email: sub.kid_email_id,
+      Score: `${score.correct}/${score.total}`,
+      'Submitted At': new Date(sub.created_at).toLocaleString(),
+    };
+  });
+
+  const ws = XLSX.utils.json_to_sheet(data);
+  ws['!cols'] = [
+    { wch: 20 },
+    { wch: 30 },
+    { wch: 10 },
+    { wch: 22 },
+  ];
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, 'Submissions');
+  XLSX.writeFile(wb, 'submissions.xlsx');
+}
 </script>
 
 <template>
   <div class="submissions-page">
     <header class="submissions-header">
-      <h1>Submissions</h1>
+      <div class="header-left">
+        <button class="back-btn" @click="router.push('/dashboard')">&larr;</button>
+        <h1>Submissions</h1>
+      </div>
       <button class="logout-btn" @click="handleLogout">Logout</button>
     </header>
     <div class="submissions-content">
@@ -128,8 +155,11 @@ function getUserAnswers(ansJson) {
         </select>
       </div>
 
-      <div v-if="!loading && selectedId && submissions.length > 0" class="submissions-count">
-        {{ submissions.length }} submission{{ submissions.length !== 1 ? 's' : '' }}
+      <div v-if="!loading && selectedId && submissions.length > 0" class="submissions-toolbar">
+        <span class="submissions-count">
+          {{ submissions.length }} submission{{ submissions.length !== 1 ? 's' : '' }}
+        </span>
+        <button class="export-btn" @click="exportToExcel">&#128229; Export Excel</button>
       </div>
 
       <div v-if="loading" class="loading">Loading submissions...</div>
@@ -198,6 +228,29 @@ function getUserAnswers(ansJson) {
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
   margin-bottom: 32px;
 }
+
+.header-left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.back-btn {
+  background: #f1f3f5;
+  color: #555;
+  border: none;
+  border-radius: 8px;
+  width: 36px;
+  height: 36px;
+  font-size: 18px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.2s ease;
+}
+
+.back-btn:hover { background: #e2e5e9; }
 
 .submissions-header h1 {
   margin: 0;
@@ -276,12 +329,34 @@ function getUserAnswers(ansJson) {
   color: #888;
 }
 
+.submissions-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 16px;
+}
+
 .submissions-count {
   font-size: 14px;
   font-weight: 600;
   color: #666;
-  margin-bottom: 16px;
 }
+
+.export-btn {
+  background: #1a7f37;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  padding: 8px 16px;
+  font-weight: 600;
+  font-size: 14px;
+  cursor: pointer;
+  transition: background 0.2s ease;
+  min-height: 36px;
+  touch-action: manipulation;
+}
+
+.export-btn:hover { background: #156d2c; }
 
 .submissions-list {
   display: flex;

@@ -45,7 +45,7 @@ async function handleLogin() {
   }
 
   sessionStorage.setItem('admin_id', data.id);
-  router.push('/submissions');
+  router.push('/dashboard');
 }
 </script>
 
