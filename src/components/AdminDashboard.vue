@@ -33,6 +33,15 @@ function handleLogout() {
           <span class="dash-arrow">&rsaquo;</span>
         </div>
 
+        <div class="dash-card" @click="router.push('/crosswords')">
+          <div class="dash-icon list-icon">&#128218;</div>
+          <div class="dash-info">
+            <h2>View Crosswords</h2>
+            <p>Browse all created crosswords</p>
+          </div>
+          <span class="dash-arrow">&rsaquo;</span>
+        </div>
+
         <div class="dash-card" @click="router.push('/submissions')">
           <div class="dash-icon">&#128203;</div>
           <div class="dash-info">
@@ -128,6 +137,10 @@ function handleLogout() {
 
 .dash-icon.create-icon {
   background: #e8f5e9;
+}
+
+.dash-icon.list-icon {
+  background: #e3f2fd;
 }
 
 .dash-info {
