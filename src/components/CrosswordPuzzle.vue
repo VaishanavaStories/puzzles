@@ -20,12 +20,9 @@ const downClues = computed(() =>
 const formData = ref({ name: '', email: '', ans_json: {} });
 
 const toast = ref({ show: false, message: '', type: 'error' });
-let toastTimer = null;
 
 function showToast(message, type = 'error') {
-  if (toastTimer) clearTimeout(toastTimer);
   toast.value = { show: true, message, type };
-  toastTimer = setTimeout(() => { toast.value.show = false; }, 4000);
 }
 
 const confirmState = ref({ show: false, message: '' });
@@ -113,14 +110,7 @@ onMounted(fetchPuzzle);
 
 <template>
   <div class="puzzle-container" v-if="puzzleData">
-    <Transition name="toast">
-      <div v-if="toast.show" class="toast" :class="toast.type">
-        <span class="toast-icon">{{ toast.type === 'success' ? '\u2713' : '\u26A0' }}</span>
-        <span>{{ toast.message }}</span>
-      </div>
-    </Transition>
-
-    <h1>Word Puzzle Challenge!</h1>
+    <h1>Crossword Challenge!</h1>
     
     <div class="form-group">
       <div class="form-row">
@@ -178,6 +168,20 @@ onMounted(fetchPuzzle);
           <div class="modal-actions">
             <button class="modal-btn cancel" @click="confirmAnswer(false)">Go Back</button>
             <button class="modal-btn confirm" @click="confirmAnswer(true)">Submit</button>
+          </div>
+        </div>
+      </div>
+    </Transition>
+
+    <Transition name="modal">
+      <div v-if="toast.show" class="modal-overlay" @click.self="toast.show = false">
+        <div class="modal-card">
+          <div class="toast-icon-large" :class="toast.type">
+            {{ toast.type === 'success' ? '\u2713' : '\u26A0' }}
+          </div>
+          <p class="modal-message">{{ toast.message }}</p>
+          <div class="modal-actions">
+            <button class="modal-btn confirm" @click="toast.show = false" :class="toast.type === 'error' ? 'error-btn' : ''">OK</button>
           </div>
         </div>
       </div>
@@ -309,47 +313,41 @@ li { margin-bottom: 8px; font-size: 14px; color: #555; }
   li { font-size: 13px; }
 }
 
-.toast {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  padding: 12px 16px;
-  border-radius: 10px;
-  font-size: 14px;
-  font-weight: 500;
-  line-height: 1.4;
-}
-
-.toast.error {
-  background: #fff0f0;
-  border: 1px solid #ffcccc;
-  color: #c0392b;
-}
-
-.toast.success {
-  background: #f0fff4;
-  border: 1px solid #c6f6d5;
-  color: #1a7f37;
-}
-
-.toast-icon {
-  font-size: 16px;
-  flex-shrink: 0;
-}
-
-.toast-enter-active,
-.toast-leave-active {
-  transition: all 0.3s ease;
-}
-
-.toast-enter-from {
-  opacity: 0;
-  transform: translateY(-8px);
-}
-
+.toast-enter-from,
 .toast-leave-to {
   opacity: 0;
   transform: translateY(-8px);
+}
+
+.toast-icon-large {
+  width: 48px;
+  height: 48px;
+  margin: 0 auto 14px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 24px;
+  font-weight: bold;
+}
+
+.toast-icon-large.success {
+  background: #f0fff4;
+  color: #1a7f37;
+}
+
+.toast-icon-large.error {
+  background: #fff0f0;
+  color: #c0392b;
+}
+
+.error-btn {
+  background: #c0392b !important;
+  color: #fff !important;
+}
+
+.error-btn:hover {
+  background: #a93226 !important;
 }
 
 .modal-overlay {
