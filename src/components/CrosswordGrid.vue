@@ -1,15 +1,16 @@
 <template>
-  <div class="grid-board">
+  <div ref="boardRef" class="grid-board" :style="boardStyle">
     <div 
       v-for="(cell, key) in uniqueCells" 
       :key="key"
       class="char-slot"
-      :style="{ 'grid-column': cell.x, 'grid-row': cell.y }"
+      :style="slotStyle(cell)"
     >
       <input 
         :ref="el => { if (el) inputRefs[key] = el }"
         maxlength="1" 
         class="cell-input"
+        :style="inputStyle"
         :class="{ 
           'wrong': getCellStatus(cell.x, cell.y) === 'wrong',
           'correct': getCellStatus(cell.x, cell.y) === 'correct' 
@@ -26,7 +27,7 @@
 </template>
 
 <script setup>
-import { computed, ref } from 'vue';
+import { computed, ref, onMounted, onBeforeUnmount, nextTick } from 'vue';
 
 const props = defineProps({
   puzzleData: Array,
@@ -42,6 +43,66 @@ const inputRefs = ref({});
 const currentDirection = ref('across');
 const lastFocusedKey = ref(null);
 let isProgrammaticFocus = false;
+
+const boardRef = ref(null);
+const boardWidth = ref(0);
+let resizeObserver = null;
+
+const gridCols = computed(() => {
+  if (!props.puzzleData) return 0;
+  let maxX = 0;
+  props.puzzleData.forEach(w => {
+    const end = w.orientation === 'across' ? w.startx + w.answer.length : w.startx;
+    if (end > maxX) maxX = end;
+  });
+  return maxX;
+});
+
+const cellSize = computed(() => {
+  if (!boardWidth.value || !gridCols.value) return 32;
+  const fit = Math.floor(boardWidth.value / gridCols.value);
+  return Math.min(36, Math.max(28, fit));
+});
+
+const boardStyle = computed(() => ({
+  '--cell-size': cellSize.value + 'px',
+  'grid-template-columns': `repeat(${gridCols.value}, var(--cell-size))`,
+  'grid-auto-rows': 'var(--cell-size)',
+}));
+
+const slotStyle = (cell) => ({
+  'grid-column': cell.x,
+  'grid-row': cell.y,
+  width: 'var(--cell-size)',
+  height: 'var(--cell-size)',
+});
+
+const inputStyle = computed(() => {
+  const s = cellSize.value;
+  return {
+    width: (s - 2) + 'px',
+    height: (s - 2) + 'px',
+    fontSize: Math.max(10, Math.floor(s * 0.45)) + 'px',
+  };
+});
+
+onMounted(() => {
+  nextTick(() => {
+    if (boardRef.value && boardRef.value.parentElement) {
+      boardWidth.value = boardRef.value.parentElement.clientWidth;
+      resizeObserver = new ResizeObserver(entries => {
+        for (const entry of entries) {
+          boardWidth.value = entry.contentRect.width;
+        }
+      });
+      resizeObserver.observe(boardRef.value.parentElement);
+    }
+  });
+});
+
+onBeforeUnmount(() => {
+  if (resizeObserver) resizeObserver.disconnect();
+});
 
 const uniqueCells = computed(() => {
   const cells = {};
@@ -197,16 +258,16 @@ const getCellStatus = (x, y) => {
 <style scoped>
 .grid-board {
   display: grid;
-  grid-auto-columns: 32px;
-  grid-auto-rows: 32px;
+  gap: 0;
   width: fit-content;
   margin: 0 auto;
 }
 
-.char-slot { width: 32px; height: 32px; }
+.char-slot {
+  box-sizing: border-box;
+}
 
 .cell-input {
-  width: 30px; height: 30px;
   border: 1px solid #4a90e2;
   border-radius: 4px;
   text-align: center;
@@ -215,6 +276,8 @@ const getCellStatus = (x, y) => {
   font-weight: bold;
   box-sizing: border-box;
   padding: 0;
+  -webkit-appearance: none;
+  appearance: none;
 }
 
 .cell-input:focus {

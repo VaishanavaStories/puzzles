@@ -8,7 +8,7 @@ const route = useRoute();
 const qnId = route.params.id; 
 const puzzleData = ref(null);
 const showResults = ref(false);
-const finalSubmission = ref(null); // Store data to display red highlights
+const finalSubmission = ref(null);
 
 const acrossClues = computed(() => 
   puzzleData.value ? puzzleData.value.filter(i => i.orientation === 'across') : []
@@ -32,7 +32,7 @@ async function fetchPuzzle() {
     console.error('Error fetching puzzle:', error.message);
   } else {
     puzzleData.value = JSON.parse(data.qns_json);
-    showResults.value = false; // <--- Change this to false so it is editable
+    showResults.value = false;
   }
 }
 
@@ -45,7 +45,6 @@ async function submitPuzzle() {
   const email = formData.value.email.trim();
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
-  // Validation
   if (!name || !email) {
     alert("Please enter both your name and email.");
     return;
@@ -75,9 +74,7 @@ async function submitPuzzle() {
   if (error) {
     alert('Submission failed: ' + error.message);
   } else {
-    // 1. Set the submission data to trigger red highlighting in CrosswordGrid
     finalSubmission.value = submissionData;
-    // 2. Lock the grid
     showResults.value = true; 
     alert('Submitted successfully!');
   }
@@ -97,13 +94,15 @@ onMounted(fetchPuzzle);
       </div>
     </div>
 
-    <CrosswordGrid 
-      :puzzleData="puzzleData" 
-      :isReadOnly="showResults" 
-      :results="finalSubmission"
-      :currentAnswers="formData.ans_json" 
-      @update:modelValue="handleUpdate" 
-    />
+    <div class="grid-wrapper">
+      <CrosswordGrid 
+        :puzzleData="puzzleData" 
+        :isReadOnly="showResults" 
+        :results="finalSubmission"
+        :currentAnswers="formData.ans_json" 
+        @update:modelValue="handleUpdate" 
+      />
+    </div>
 
     <div class="clues-container">
       <div>
@@ -140,9 +139,10 @@ onMounted(fetchPuzzle);
 
 <style scoped>
 .puzzle-container {
+  width: 100%;
   max-width: 600px;
-  margin: 20px auto;
-  padding: 30px;
+  margin: 0 auto;
+  padding: clamp(16px, 4vw, 30px);
   background: #fff;
   border-radius: 20px;
   box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
@@ -150,9 +150,17 @@ onMounted(fetchPuzzle);
   flex-direction: column;
   gap: 20px;
   font-family: 'Segoe UI', sans-serif;
+  box-sizing: border-box;
 }
 
-h1 { text-align: center; color: #333; margin: 0; }
+h1 { text-align: center; color: #333; margin: 0; font-size: clamp(18px, 5vw, 28px); }
+
+.grid-wrapper {
+  width: 100%;
+  overflow-x: auto;
+  overflow-y: visible;
+  -webkit-overflow-scrolling: touch;
+}
 
 .form-row {
   display: grid;
@@ -169,6 +177,8 @@ h1 { text-align: center; color: #333; margin: 0; }
   outline: none;
   transition: all 0.3s ease;
   box-sizing: border-box;
+  font-size: 16px;
+  min-height: 44px;
 }
 
 .form-row input:focus {
@@ -177,10 +187,9 @@ h1 { text-align: center; color: #333; margin: 0; }
   box-shadow: 0 0 0 4px rgba(255, 159, 67, 0.15);
 }
 
-/* Highlight invalid fields */
 .form-row input:invalid:focus {
   border-color: #ff4757;
-  box-shadow: 0 0 0 4px rgba(255, 71, 87, 0.15);
+  box-shadow: 0 0 0 4px rgba(255, 71, 88, 0.15);
 }
 
 .clues-container {
@@ -207,11 +216,16 @@ li { margin-bottom: 8px; font-size: 14px; color: #555; }
   font-weight: bold;
   font-size: 16px;
   transition: background 0.3s ease;
+  width: 100%;
+  min-height: 44px;
+  touch-action: manipulation;
 }
 
 .submit-btn:hover { background: #e67e22; }
 
 @media (max-width: 480px) {
-  .form-row, .clues-container { grid-template-columns: 1fr; }
+  .form-row { grid-template-columns: 1fr; }
+  .clues-container { grid-template-columns: 1fr; padding: 14px; gap: 12px; }
+  li { font-size: 13px; }
 }
 </style>

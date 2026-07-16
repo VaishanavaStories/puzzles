@@ -1,0 +1,22 @@
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html, body {
+  margin: 0;
+  padding: 0;
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  min-height: 100vh;
+  background: #f0f2f5;
+  padding: 16px;
+  touch-action: manipulation;
+}
+
+input, button, textarea, select {
+  font: inherit;
+}
