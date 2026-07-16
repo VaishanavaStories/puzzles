@@ -104,7 +104,7 @@ async function submitPuzzle() {
   } else {
     finalSubmission.value = submissionData;
     showResults.value = true; 
-    showToast('Submitted successfully!', 'success');
+    showToast('Submitted successfully! Answer will be posted in WhatsApp group.', 'success');
   }
 }
 
