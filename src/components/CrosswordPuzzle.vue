@@ -19,6 +19,31 @@ const downClues = computed(() =>
 
 const formData = ref({ name: '', email: '', ans_json: {} });
 
+const toast = ref({ show: false, message: '', type: 'error' });
+let toastTimer = null;
+
+function showToast(message, type = 'error') {
+  if (toastTimer) clearTimeout(toastTimer);
+  toast.value = { show: true, message, type };
+  toastTimer = setTimeout(() => { toast.value.show = false; }, 4000);
+}
+
+const confirmState = ref({ show: false, message: '' });
+let confirmResolve = null;
+
+function showConfirm(message) {
+  return new Promise(resolve => {
+    confirmResolve = resolve;
+    confirmState.value = { show: true, message };
+  });
+}
+
+function confirmAnswer(val) {
+  confirmState.value.show = false;
+  if (confirmResolve) confirmResolve(val);
+  confirmResolve = null;
+}
+
 async function fetchPuzzle() {
   if (!qnId) return;
 
@@ -46,14 +71,17 @@ async function submitPuzzle() {
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
   if (!name || !email) {
-    alert("Please enter both your name and email.");
+    showToast('Please enter both your name and email.');
     return;
   }
   if (!emailRegex.test(email)) {
-    alert("Please enter a valid email address.");
+    showToast('Please enter a valid email address.');
     return;
   }
   if (!puzzleData.value) return;
+
+  const agreed = await showConfirm('Are you sure you want to submit? You won\'t be able to change your answers after submitting.');
+  if (!agreed) return;
 
   const submissionData = puzzleData.value.map(wordObj => ({
     ...wordObj,
@@ -72,11 +100,11 @@ async function submitPuzzle() {
   }]);
 
   if (error) {
-    alert('Submission failed: ' + error.message);
+    showToast('Submission failed: ' + error.message);
   } else {
     finalSubmission.value = submissionData;
     showResults.value = true; 
-    alert('Submitted successfully!');
+    showToast('Submitted successfully!', 'success');
   }
 }
 
@@ -85,6 +113,13 @@ onMounted(fetchPuzzle);
 
 <template>
   <div class="puzzle-container" v-if="puzzleData">
+    <Transition name="toast">
+      <div v-if="toast.show" class="toast" :class="toast.type">
+        <span class="toast-icon">{{ toast.type === 'success' ? '\u2713' : '\u26A0' }}</span>
+        <span>{{ toast.message }}</span>
+      </div>
+    </Transition>
+
     <h1>Word Puzzle Challenge!</h1>
     
     <div class="form-group">
@@ -123,13 +158,30 @@ onMounted(fetchPuzzle);
       </div>
     </div>
 
+    <div v-if="showResults" class="submitted-badge">
+      <span class="submitted-icon">&#10003;</span>
+      Submitted
+    </div>
     <button 
+      v-else
       @click="submitPuzzle" 
-      class="submit-btn" 
-      :disabled="showResults"
+      class="submit-btn"
     >
-      {{ showResults ? 'Submitted' : 'Submit Answer' }}
+      Submit Answer
     </button>
+
+    <Transition name="modal">
+      <div v-if="confirmState.show" class="modal-overlay" @click.self="confirmAnswer(false)">
+        <div class="modal-card">
+          <div class="modal-icon">&#9888;</div>
+          <p class="modal-message">{{ confirmState.message }}</p>
+          <div class="modal-actions">
+            <button class="modal-btn cancel" @click="confirmAnswer(false)">Go Back</button>
+            <button class="modal-btn confirm" @click="confirmAnswer(true)">Submit</button>
+          </div>
+        </div>
+      </div>
+    </Transition>
   </div>
   
   <div v-else class="puzzle-container">
@@ -223,9 +275,178 @@ li { margin-bottom: 8px; font-size: 14px; color: #555; }
 
 .submit-btn:hover { background: #e67e22; }
 
+.submitted-badge {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 14px;
+  background: #f0fff4;
+  border: 1px solid #c6f6d5;
+  border-radius: 10px;
+  color: #1a7f37;
+  font-weight: 600;
+  font-size: 16px;
+  text-align: center;
+}
+
+.submitted-icon {
+  width: 22px;
+  height: 22px;
+  background: #1a7f37;
+  color: #fff;
+  border-radius: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 13px;
+  flex-shrink: 0;
+}
+
 @media (max-width: 480px) {
   .form-row { grid-template-columns: 1fr; }
   .clues-container { grid-template-columns: 1fr; padding: 14px; gap: 12px; }
   li { font-size: 13px; }
+}
+
+.toast {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 16px;
+  border-radius: 10px;
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 1.4;
+}
+
+.toast.error {
+  background: #fff0f0;
+  border: 1px solid #ffcccc;
+  color: #c0392b;
+}
+
+.toast.success {
+  background: #f0fff4;
+  border: 1px solid #c6f6d5;
+  color: #1a7f37;
+}
+
+.toast-icon {
+  font-size: 16px;
+  flex-shrink: 0;
+}
+
+.toast-enter-active,
+.toast-leave-active {
+  transition: all 0.3s ease;
+}
+
+.toast-enter-from {
+  opacity: 0;
+  transform: translateY(-8px);
+}
+
+.toast-leave-to {
+  opacity: 0;
+  transform: translateY(-8px);
+}
+
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 20px;
+}
+
+.modal-card {
+  background: #fff;
+  border-radius: 16px;
+  padding: 28px 24px 20px;
+  max-width: 340px;
+  width: 100%;
+  text-align: center;
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.2);
+}
+
+.modal-icon {
+  width: 48px;
+  height: 48px;
+  margin: 0 auto 14px;
+  background: #fff8e1;
+  color: #f59e0b;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 24px;
+}
+
+.modal-message {
+  margin: 0 0 20px;
+  font-size: 15px;
+  color: #444;
+  line-height: 1.5;
+}
+
+.modal-actions {
+  display: flex;
+  gap: 10px;
+}
+
+.modal-btn {
+  flex: 1;
+  padding: 12px;
+  border: none;
+  border-radius: 10px;
+  font-weight: 600;
+  font-size: 15px;
+  cursor: pointer;
+  transition: background 0.2s ease;
+  min-height: 44px;
+  touch-action: manipulation;
+}
+
+.modal-btn.cancel {
+  background: #f1f3f5;
+  color: #555;
+}
+
+.modal-btn.cancel:hover { background: #e2e5e9; }
+
+.modal-btn.confirm {
+  background: #ff9f43;
+  color: #fff;
+}
+
+.modal-btn.confirm:hover { background: #e67e22; }
+
+.modal-enter-active,
+.modal-leave-active {
+  transition: opacity 0.25s ease;
+}
+
+.modal-enter-active .modal-card,
+.modal-leave-active .modal-card {
+  transition: transform 0.25s ease, opacity 0.25s ease;
+}
+
+.modal-enter-from,
+.modal-leave-to {
+  opacity: 0;
+}
+
+.modal-enter-from .modal-card {
+  transform: scale(0.92);
+  opacity: 0;
+}
+
+.modal-leave-to .modal-card {
+  transform: scale(0.92);
+  opacity: 0;
 }
 </style>
