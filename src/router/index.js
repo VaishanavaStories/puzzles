@@ -1,8 +1,16 @@
 import { createRouter, createWebHistory } from 'vue-router';
-import CrosswordPuzzle from '../components/CrosswordPuzzle.vue'; // Create this file
+import CrosswordPuzzle from '../components/CrosswordPuzzle.vue';
+import AdminLogin from '../components/AdminLogin.vue';
+import AdminDashboard from '../components/AdminDashboard.vue';
+import AdminSubmissions from '../components/AdminSubmissions.vue';
+import CreateCrossword from '../components/CreateCrossword.vue';
 
 const routes = [
-  { path: '/puzzle/:id', component: CrosswordPuzzle }
+  { path: '/puzzle/:id', component: CrosswordPuzzle },
+  { path: '/admin', component: AdminLogin },
+  { path: '/dashboard', component: AdminDashboard },
+  { path: '/submissions', component: AdminSubmissions },
+  { path: '/create', component: CreateCrossword },
 ];
 
 const router = createRouter({
