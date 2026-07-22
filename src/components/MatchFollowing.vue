@@ -29,12 +29,6 @@ const availableAnswers = computed(() => {
     .filter(a => !placed.has(a.pos));
 });
 
-const allFilled = computed(() => {
-  return clues.value.length > 0
-    && clues.value.every((_, i) => placements.value[i] !== undefined)
-    && kidName.value.trim() !== ''
-    && kidEmail.value.trim() !== '';
-});
 
 onMounted(async () => {
   if (!matchId) {
@@ -303,7 +297,6 @@ async function checkAnswers() {
     <div v-if="!submitted" class="btn-row">
       <button
         class="submit-btn"
-        :disabled="!allFilled"
         @click="checkAnswers"
       >
         Submit
@@ -545,13 +538,8 @@ h1 {
   touch-action: manipulation;
 }
 
-.submit-btn:hover:not(:disabled) {
+.submit-btn:hover {
   background: #e67e22;
-}
-
-.submit-btn:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
 }
 
 .btn-row {
