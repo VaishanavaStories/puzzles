@@ -1,8 +1,18 @@
 <script setup>
+import { ref, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
-import { onMounted } from 'vue';
 
 const router = useRouter();
+
+const sections = ref([
+  { id: 'crossword', label: 'Crossword', open: true },
+  { id: 'match', label: 'Match It Up', open: false },
+]);
+
+function toggleSection(id) {
+  const s = sections.value.find(s => s.id === id);
+  if (s) s.open = !s.open;
+}
 
 onMounted(() => {
   if (!sessionStorage.getItem('admin_id')) {
@@ -23,32 +33,69 @@ function handleLogout() {
       <button class="logout-btn" @click="handleLogout">Logout</button>
     </header>
     <div class="dashboard-content">
-      <div class="cards">
-        <div class="dash-card" @click="router.push('/create')">
-          <div class="dash-icon create-icon">&#9998;</div>
-          <div class="dash-info">
-            <h2>Create New Crossword</h2>
-            <p>Build a crossword with clues and answers</p>
+      <div class="sections">
+        <div class="section" v-for="section in sections" :key="section.id">
+          <div class="section-header" @click="toggleSection(section.id)">
+            <span class="section-icon">{{ section.id === 'crossword' ? '&#128221;' : '&#127923;' }}</span>
+            <span class="section-label">{{ section.label }}</span>
+            <span class="section-chevron" :class="{ open: section.open }">&#9662;</span>
           </div>
-          <span class="dash-arrow">&rsaquo;</span>
-        </div>
-
-        <div class="dash-card" @click="router.push('/crosswords')">
-          <div class="dash-icon list-icon">&#128218;</div>
-          <div class="dash-info">
-            <h2>View Crosswords</h2>
-            <p>Browse all created crosswords</p>
-          </div>
-          <span class="dash-arrow">&rsaquo;</span>
-        </div>
-
-        <div class="dash-card" @click="router.push('/submissions')">
-          <div class="dash-icon">&#128203;</div>
-          <div class="dash-info">
-            <h2>Submissions</h2>
-            <p>View and score kid submissions</p>
-          </div>
-          <span class="dash-arrow">&rsaquo;</span>
+          <transition name="expand">
+            <div class="section-body" v-show="section.open">
+              <template v-if="section.id === 'crossword'">
+                <div class="dash-card" @click="router.push('/create')">
+                  <div class="dash-icon create-icon">&#9998;</div>
+                  <div class="dash-info">
+                    <h2>Create New Crossword</h2>
+                    <p>Build a crossword with clues and answers</p>
+                  </div>
+                  <span class="dash-arrow">&rsaquo;</span>
+                </div>
+                <div class="dash-card" @click="router.push('/crosswords')">
+                  <div class="dash-icon list-icon">&#128218;</div>
+                  <div class="dash-info">
+                    <h2>View Crosswords</h2>
+                    <p>Browse all created crosswords</p>
+                  </div>
+                  <span class="dash-arrow">&rsaquo;</span>
+                </div>
+                <div class="dash-card" @click="router.push('/submissions')">
+                  <div class="dash-icon submit-icon">&#128203;</div>
+                  <div class="dash-info">
+                    <h2>Submissions</h2>
+                    <p>View and score kid submissions</p>
+                  </div>
+                  <span class="dash-arrow">&rsaquo;</span>
+                </div>
+              </template>
+              <template v-if="section.id === 'match'">
+                <div class="dash-card" @click="router.push('/match/create')">
+                  <div class="dash-icon match-create-icon">&#9998;</div>
+                  <div class="dash-info">
+                    <h2>Create New Match</h2>
+                    <p>Build a matching card game</p>
+                  </div>
+                  <span class="dash-arrow">&rsaquo;</span>
+                </div>
+                <div class="dash-card" @click="router.push('/match/list')">
+                  <div class="dash-icon match-list-icon">&#128218;</div>
+                  <div class="dash-info">
+                    <h2>View Matches</h2>
+                    <p>Browse all created match games</p>
+                  </div>
+                  <span class="dash-arrow">&rsaquo;</span>
+                </div>
+                <div class="dash-card" @click="router.push('/match/submissions')">
+                  <div class="dash-icon match-submit-icon">&#128203;</div>
+                  <div class="dash-info">
+                    <h2>Match Submissions</h2>
+                    <p>View and score kid submissions</p>
+                  </div>
+                  <span class="dash-arrow">&rsaquo;</span>
+                </div>
+              </template>
+            </div>
+          </transition>
         </div>
       </div>
     </div>
@@ -100,35 +147,82 @@ function handleLogout() {
   padding: 0 20px;
 }
 
-.cards {
+.sections {
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: 12px;
+}
+
+.section {
+  background: #fff;
+  border-radius: 16px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+  overflow: hidden;
+}
+
+.section-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 20px 24px;
+  cursor: pointer;
+  user-select: none;
+  transition: background 0.15s ease;
+}
+
+.section-header:hover {
+  background: #fafafa;
+}
+
+.section-icon {
+  font-size: 24px;
+}
+
+.section-label {
+  flex: 1;
+  font-size: 17px;
+  font-weight: 700;
+  color: #333;
+}
+
+.section-chevron {
+  font-size: 14px;
+  color: #aaa;
+  transition: transform 0.25s ease;
+}
+
+.section-chevron.open {
+  transform: rotate(180deg);
+}
+
+.section-body {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 0 16px 16px;
 }
 
 .dash-card {
-  background: #fff;
-  border-radius: 16px;
-  padding: 24px;
+  background: #f7f8fa;
+  border-radius: 12px;
+  padding: 18px 20px;
   display: flex;
   align-items: center;
-  gap: 16px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+  gap: 14px;
   cursor: pointer;
   transition: box-shadow 0.2s ease, transform 0.15s ease;
 }
 
 .dash-card:hover {
-  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
   transform: translateY(-1px);
 }
 
 .dash-icon {
-  font-size: 32px;
-  width: 56px;
-  height: 56px;
-  background: #fff8e1;
-  border-radius: 14px;
+  font-size: 28px;
+  width: 48px;
+  height: 48px;
+  border-radius: 12px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -143,25 +237,61 @@ function handleLogout() {
   background: #e3f2fd;
 }
 
+.dash-icon.submit-icon {
+  background: #fff8e1;
+}
+
+.dash-icon.match-create-icon {
+  background: #e8f5e9;
+}
+
+.dash-icon.match-list-icon {
+  background: #e3f2fd;
+}
+
+.dash-icon.match-submit-icon {
+  background: #fff8e1;
+}
+
 .dash-info {
   flex: 1;
 }
 
 .dash-info h2 {
-  margin: 0 0 4px;
-  font-size: 17px;
+  margin: 0 0 2px;
+  font-size: 15px;
   color: #333;
 }
 
 .dash-info p {
   margin: 0;
-  font-size: 14px;
+  font-size: 13px;
   color: #888;
 }
 
 .dash-arrow {
-  font-size: 28px;
+  font-size: 26px;
   color: #ccc;
   font-weight: 300;
+}
+
+.expand-enter-active,
+.expand-leave-active {
+  transition: all 0.25s ease;
+  overflow: hidden;
+}
+
+.expand-enter-from,
+.expand-leave-to {
+  opacity: 0;
+  max-height: 0;
+  padding-top: 0;
+  padding-bottom: 0;
+}
+
+.expand-enter-to,
+.expand-leave-from {
+  opacity: 1;
+  max-height: 500px;
 }
 </style>
