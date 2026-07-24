@@ -130,7 +130,7 @@ async function handleCreate() {
       answer: e.answer.trim(),
     }));
 
-    const qnsJson = JSON.stringify(validEntries);
+    const qnsJson = JSON.stringify({ questions: validEntries });
 
     const { error } = await supabase
       .from('connect_qns')

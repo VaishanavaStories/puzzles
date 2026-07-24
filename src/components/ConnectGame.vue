@@ -37,7 +37,8 @@ onMounted(async () => {
   }
 
   connectName.value = data.connect_name || 'Connect';
-  questions.value = JSON.parse(data.qns_json);
+  const parsed = JSON.parse(data.qns_json);
+  questions.value = parsed.questions || parsed;
   userAnswers.value = questions.value.map(() => '');
   loading.value = false;
 });
