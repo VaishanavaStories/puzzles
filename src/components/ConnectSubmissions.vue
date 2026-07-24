@@ -18,8 +18,8 @@ onMounted(async () => {
   }
 
   const { data, error } = await supabase
-    .from('match_submissions')
-    .select('submission_id, kid_name, kid_email_id, ans_json, created_at')
+    .from('connect_submissions')
+    .select('submission_id, qn_id, kid_name, kid_email_id, ans_json, created_at')
     .order('created_at', { ascending: false });
 
   loading.value = false;
@@ -87,8 +87,8 @@ function exportToExcel() {
     { wch: 22 },
   ];
   const wb = XLSX.utils.book_new();
-  XLSX.utils.book_append_sheet(wb, ws, 'Match Submissions');
-  XLSX.writeFile(wb, 'match_submissions.xlsx');
+  XLSX.utils.book_append_sheet(wb, ws, 'Connect Submissions');
+  XLSX.writeFile(wb, 'connect_submissions.xlsx');
 }
 </script>
 
@@ -97,7 +97,7 @@ function exportToExcel() {
     <header class="submissions-header">
       <div class="header-left">
         <button class="back-btn" @click="router.push('/dashboard')">&larr;</button>
-        <h1>Match Submissions</h1>
+        <h1>Connect Submissions</h1>
       </div>
       <button class="logout-btn" @click="handleLogout">Logout</button>
     </header>
@@ -113,7 +113,7 @@ function exportToExcel() {
       <div v-if="loading" class="loading">Loading submissions...</div>
 
       <div v-else-if="submissions.length === 0" class="empty">
-        No match submissions yet.
+        No connect submissions yet.
       </div>
 
       <div v-else class="submissions-list">

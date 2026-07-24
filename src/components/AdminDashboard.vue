@@ -7,6 +7,7 @@ const router = useRouter();
 const sections = ref([
   { id: 'crossword', label: 'Crossword', open: true },
   { id: 'match', label: 'Match It Up', open: false },
+  { id: 'connect', label: 'Connect', open: false },
 ]);
 
 function toggleSection(id) {
@@ -36,7 +37,7 @@ function handleLogout() {
       <div class="sections">
         <div class="section" v-for="section in sections" :key="section.id">
           <div class="section-header" @click="toggleSection(section.id)">
-            <span class="section-icon">{{ section.id === 'crossword' ? '&#128221;' : '&#127923;' }}</span>
+            <span class="section-icon">{{ section.id === 'crossword' ? '&#128221;' : section.id === 'match' ? '&#127923;' : '&#128279;' }}</span>
             <span class="section-label">{{ section.label }}</span>
             <span class="section-chevron" :class="{ open: section.open }">&#9662;</span>
           </div>
@@ -89,6 +90,32 @@ function handleLogout() {
                   <div class="dash-icon match-submit-icon">&#128203;</div>
                   <div class="dash-info">
                     <h2>Match Submissions</h2>
+                    <p>View and score kid submissions</p>
+                  </div>
+                  <span class="dash-arrow">&rsaquo;</span>
+                </div>
+              </template>
+              <template v-if="section.id === 'connect'">
+                <div class="dash-card" @click="router.push('/connect/create')">
+                  <div class="dash-icon connect-create-icon">&#9998;</div>
+                  <div class="dash-info">
+                    <h2>Create New Connect</h2>
+                    <p>Build an image sequence game</p>
+                  </div>
+                  <span class="dash-arrow">&rsaquo;</span>
+                </div>
+                <div class="dash-card" @click="router.push('/connect/list')">
+                  <div class="dash-icon connect-list-icon">&#128218;</div>
+                  <div class="dash-info">
+                    <h2>View Connect Games</h2>
+                    <p>Browse all created connect games</p>
+                  </div>
+                  <span class="dash-arrow">&rsaquo;</span>
+                </div>
+                <div class="dash-card" @click="router.push('/connect/submissions')">
+                  <div class="dash-icon connect-submit-icon">&#128203;</div>
+                  <div class="dash-info">
+                    <h2>Connect Submissions</h2>
                     <p>View and score kid submissions</p>
                   </div>
                   <span class="dash-arrow">&rsaquo;</span>
@@ -250,6 +277,18 @@ function handleLogout() {
 }
 
 .dash-icon.match-submit-icon {
+  background: #fff8e1;
+}
+
+.dash-icon.connect-create-icon {
+  background: #e8f5e9;
+}
+
+.dash-icon.connect-list-icon {
+  background: #e3f2fd;
+}
+
+.dash-icon.connect-submit-icon {
   background: #fff8e1;
 }
 

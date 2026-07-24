@@ -9,6 +9,10 @@ import CreateMatch from '../components/CreateMatch.vue';
 import MatchList from '../components/MatchList.vue';
 import MatchSubmissions from '../components/MatchSubmissions.vue';
 import MatchFollowing from '../components/MatchFollowing.vue';
+import CreateConnect from '../components/CreateConnect.vue';
+import ConnectList from '../components/ConnectList.vue';
+import ConnectSubmissions from '../components/ConnectSubmissions.vue';
+import ConnectGame from '../components/ConnectGame.vue';
 
 const routes = [
   { path: '/puzzle/:id', component: CrosswordPuzzle },
@@ -21,6 +25,10 @@ const routes = [
   { path: '/match/list', component: MatchList },
   { path: '/match/submissions', component: MatchSubmissions },
   { path: '/match/:id', component: MatchFollowing },
+  { path: '/connect/create', component: CreateConnect },
+  { path: '/connect/list', component: ConnectList },
+  { path: '/connect/submissions', component: ConnectSubmissions },
+  { path: '/connect/:id', component: ConnectGame },
 ];
 
 const router = createRouter({
