@@ -277,9 +277,9 @@ h1 {
 }
 
 .question-img {
-  width: 100px;
-  height: 100px;
-  object-fit: cover;
+  max-width: 150px;
+  max-height: 150px;
+  object-fit: contain;
   border-radius: 10px;
   border: 2px solid #e9ecef;
 }
