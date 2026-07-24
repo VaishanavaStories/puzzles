@@ -16,6 +16,15 @@ const kidName = ref('');
 const kidEmail = ref('');
 const userAnswers = ref([]);
 const submitting = ref(false);
+const lightboxImg = ref('');
+
+function openLightbox(src) {
+  lightboxImg.value = src;
+}
+
+function closeLightbox() {
+  lightboxImg.value = '';
+}
 
 onMounted(async () => {
   if (!connectId) {
@@ -128,6 +137,7 @@ async function checkAnswers() {
               :src="img"
               alt="clue image"
               class="question-img"
+              @click="openLightbox(img)"
             />
           </div>
           <div class="question-clue">{{ q.clue }}</div>
@@ -164,6 +174,13 @@ async function checkAnswers() {
         </div>
       </div>
     </template>
+
+    <Transition name="fade">
+      <div v-if="lightboxImg" class="lightbox-overlay" @click="closeLightbox">
+        <button class="lightbox-close" @click="closeLightbox">&times;</button>
+        <img :src="lightboxImg" class="lightbox-img" @click.stop />
+      </div>
+    </Transition>
   </div>
 </template>
 
@@ -255,7 +272,6 @@ h1 {
 }
 
 .question-num {
-  display: inline-block;
   background: #ff9f43;
   color: #fff;
   font-weight: 700;
@@ -267,6 +283,7 @@ h1 {
   align-items: center;
   justify-content: center;
   margin-bottom: 12px;
+  flex-shrink: 0;
 }
 
 .question-images {
@@ -282,6 +299,12 @@ h1 {
   object-fit: contain;
   border-radius: 10px;
   border: 2px solid #e9ecef;
+  cursor: pointer;
+  transition: transform 0.2s ease;
+}
+
+.question-img:hover {
+  transform: scale(1.05);
 }
 
 .question-clue {
@@ -376,5 +399,52 @@ h1 {
   font-size: 16px;
   color: #666;
   font-weight: 500;
+}
+
+.lightbox-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.85);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 2000;
+  padding: 20px;
+  cursor: pointer;
+}
+
+.lightbox-close {
+  position: absolute;
+  top: 16px;
+  right: 20px;
+  background: none;
+  border: none;
+  color: #fff;
+  font-size: 36px;
+  cursor: pointer;
+  padding: 4px 12px;
+  line-height: 1;
+  z-index: 2001;
+}
+
+.lightbox-close:hover { color: #ccc; }
+
+.lightbox-img {
+  max-width: 90vw;
+  max-height: 85vh;
+  object-fit: contain;
+  border-radius: 8px;
+  cursor: default;
+  box-shadow: 0 8px 40px rgba(0, 0, 0, 0.5);
+}
+
+.fade-enter-active,
+.fade-leave-active {
+  transition: opacity 0.25s ease;
+}
+
+.fade-enter-from,
+.fade-leave-to {
+  opacity: 0;
 }
 </style>
